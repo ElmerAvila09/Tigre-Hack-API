@@ -3,7 +3,7 @@ const express = require('express');
 const policias = require('./policia.js');
 
 // Puerto en el que la API escuchará las solicitudes
-const puerto = 3000;
+const puerto = 5000;
 
 // Crear una instancia de la aplicación de Express
 const app = express();
@@ -53,7 +53,7 @@ app.post('/assign', (req, res) => {
     policiaCercano.asignado = "true";
   }
 
-  res.json(policiaCercano);
+  res.json({policiaCercano, "distancia": distanciaMinima});
 });
 
 
@@ -63,7 +63,17 @@ app.listen(puerto, () => {
 });
 
 
-function calcularDistancia(x1, y1, x2, y2) {
-  const distancia = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-  return distancia;
+function calcularDistancia(lat1, lon1, lat2, lon2) {
+  const radLat1 = (Math.PI / 180) * lat1;
+  const radLat2 = (Math.PI / 180) * lat2;
+  const theta = lon1 - lon2;
+  const radTheta = (Math.PI / 180) * theta;
+  let dist =
+    Math.sin(radLat1) * Math.sin(radLat2) +
+    Math.cos(radLat1) * Math.cos(radLat2) * Math.cos(radTheta);
+  dist = Math.acos(dist);
+  dist = (dist * 180) / Math.PI;
+  dist = dist * 60 * 1.1515;
+  dist = (dist * 1.609344) * 1000; // Convertir a metros
+  return dist;
 }
